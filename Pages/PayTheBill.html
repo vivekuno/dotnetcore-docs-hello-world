@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pay Bill Game</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .container { max-width: 400px; margin: auto; }
+        .user-input { display: flex; align-items: center; margin-bottom: 10px; }
+        .user-input input { padding: 5px; margin-right: 5px; }
+        .winner { background-color: lightgreen; }
+        .loser { background-color: lightcoral; }
+        .blank { background-color: lightgray; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <h2>Pay Bill Game</h2>
+    <div class="container">
+        <div id="users">
+            <div class="user-input">
+                <input type="text" placeholder="User1" class="user-name">
+                <input type="number" placeholder="Guess Amount" class="guess-amount">
+                
+            </div>
+            <div class="user-input">
+                <input type="text" placeholder="User2" class="user-name">
+                <input type="number" placeholder="Guess Amount" class="guess-amount">
+            </div>
+        </div>
+		<br>
+		<button onclick="addUser()">➕</button>
+        <br><br>
+        <label>Bill Amount:</label>
+        <input type="number" id="billAmount">
+        <br><br>
+        <button onclick="calculateWinner()">Find Winner</button>
+        <h3 id="winnerDisplay" class="hidden">Winner is: <span id="winner"></span> <span id="winnerColorBox" style="display:inline-block; width:20px; height:20px; border-radius:50%;"></span></h3>
+    </div>
+    
+    <script>
+        const colorNames = {
+            "#ff0000": "Red",
+            "#00ff00": "Green",
+            "#0000ff": "Blue",
+            "#ffff00": "Yellow",
+            "#ff00ff": "Magenta",
+            "#00ffff": "Cyan",
+            "#ffa500": "Orange",
+            "#800080": "Purple",
+            "#008000": "Dark Green",
+            "#000000": "Black"
+        };
+
+        function getRandomColor() {
+            const colors = Object.keys(colorNames);
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        function initializeUserInputs() {
+            document.querySelectorAll('.user-name').forEach(input => {
+                if (!input.value.trim()) {
+                    let color = getRandomColor();
+                    input.style.backgroundColor = color;
+                    input.dataset.color = color;
+                }
+                input.addEventListener('input', function() {
+                    if (this.value.trim()) {
+                        this.style.backgroundColor = '';
+                        this.dataset.color = '';
+                    } else {
+                        let color = getRandomColor();
+                        this.style.backgroundColor = color;
+                        this.dataset.color = color;
+                    }
+                });
+            });
+        }
+
+        function addUser() {
+            let userContainer = document.getElementById('users');
+            let div = document.createElement('div');
+            div.classList.add('user-input');
+            div.innerHTML = `
+                <input type="text" placeholder="User" class="user-name">
+                <input type="number" placeholder="Guess Amount" class="guess-amount">
+            `;
+            userContainer.appendChild(div);
+            initializeUserInputs();
+        }
+
+        function calculateWinner() {
+            let billAmount = document.getElementById('billAmount').value;
+            if (!billAmount) {
+                alert("Please enter the bill amount");
+                return;
+            }
+
+            billAmount = parseFloat(billAmount);
+            let users = document.querySelectorAll('.user-input');
+            let closestUser = null, farthestUser = null;
+            let minDiff = Infinity, maxDiff = 0;
+            let winnerColor = '';
+            let winnerColorHex = '';
+
+            users.forEach(user => {
+                let nameInput = user.querySelector('.user-name');
+                let guessInput = user.querySelector('.guess-amount');
+                let name = nameInput.value.trim();
+                let guess = parseFloat(guessInput.value);
+                
+                if (!name) {
+                    name = colorNames[nameInput.dataset.color] || "Unknown Color";
+                    winnerColorHex = nameInput.dataset.color;
+                }
+
+                let diff = Math.abs(billAmount - guess);
+                
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestUser = name;
+                    winnerColor = winnerColorHex;
+                }
+                if (diff > maxDiff) {
+                    maxDiff = diff;
+                    farthestUser = name;
+                }
+            });
+
+            document.getElementById("winner").textContent = closestUser;
+            document.getElementById("winnerColorBox").style.backgroundColor = winnerColor;
+            document.getElementById("winnerDisplay").classList.remove("hidden");
+            alert(`Winner: ${closestUser}\nLoser: ${farthestUser}`);
+        }
+
+        document.addEventListener("DOMContentLoaded", initializeUserInputs);
+    </script>
+</body>
+</html>
